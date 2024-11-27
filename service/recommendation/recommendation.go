@@ -4,18 +4,22 @@ import (
 	"context"
 	"log"
 
-	"github.com/Bangkit-Bersama/CrowdWiseBali-api/config"
-
+	"github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/config"
 	"github.com/labstack/echo/v4"
 	"googlemaps.github.io/maps"
 )
 
-func (s *service) GetByLocation(c echo.Context, latitude float64, longitude float64, placeType string) (maps.PlacesSearchResponse, error) {
+type Service struct {
+}
+
+func NewService() *Service {
+	return &Service{}
+}
+
+func (s *Service) GetByLocation(c echo.Context, latitude float64, longitude float64, placeType string) (maps.PlacesSearchResponse, error) {
 	res := maps.PlacesSearchResponse{}
 
-	cfg, err := config.LoadConfig()
-
-	apiKey := cfg.GMPKey
+	apiKey := config.GMPAPIKey
 
 	client, err := maps.NewClient(maps.WithAPIKey(apiKey))
 	if err != nil {
@@ -27,7 +31,7 @@ func (s *service) GetByLocation(c echo.Context, latitude float64, longitude floa
 		Lng: longitude,
 	}
 
-	radius := 5000 //in meter
+	radius := 5000 // in meter
 
 	req := &maps.NearbySearchRequest{
 		Location: location,

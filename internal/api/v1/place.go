@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"errors"
+	"net/http"
 
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/place"
 	"github.com/labstack/echo/v4"
@@ -24,5 +24,7 @@ func NewPlaceHandler(g *echo.Group, service *place.Service) *PlaceHandler {
 }
 
 func (h *PlaceHandler) GetByID(c echo.Context) error {
-	return errors.New("not implemented")
+	return Response(c, http.StatusOK, map[string]string{
+		"test": "hello",
+	}, nil)
 }
