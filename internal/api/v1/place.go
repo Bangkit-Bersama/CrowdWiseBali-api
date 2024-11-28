@@ -16,15 +16,15 @@ func NewPlaceHandler(g *echo.Group, service *place.Service) *PlaceHandler {
 		Service: service,
 	}
 
-	ng := g.Group("/places")
+	routeGroup := g.Group("/places")
 
-	ng.GET("/:id", handler.GetByID)
+	routeGroup.GET("/:id", handler.GetByID)
 
 	return handler
 }
 
 func (h *PlaceHandler) GetByID(c echo.Context) error {
-	return Response(c, http.StatusOK, map[string]string{
+	return Respond(c, http.StatusOK, map[string]string{
 		"test": "hello",
 	}, nil)
 }

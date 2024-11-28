@@ -3,7 +3,6 @@ package v1
 import (
 	"net/http"
 
-	"github.com/Bangkit-Bersama/CrowdWiseBali-api/entity"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/recommendation"
 	"github.com/labstack/echo/v4"
 )
@@ -17,50 +16,37 @@ func NewRecommendationHandler(g *echo.Group, service *recommendation.Service) *R
 		Service: service,
 	}
 
-	ng := g.Group("/recommendation")
+	routeGroup := g.Group("/recommendation")
 
-	ng.GET("", handler.GetByLocation)
+	routeGroup.GET("", handler.GetByLocation)
 
 	return handler
 }
 
 func (h *RecommendationHandler) GetByLocation(c echo.Context) error {
-	req := entity.ServiceGetRecommendationReq{}
+	var req struct {
+		latitude  float64
+		longitude float64
+		placeType string
+	}
 
-	err := c.Bind(&req)
+	err := echo.QueryParamsBinder(c).
+		MustFloat64("latitude", &req.latitude).
+		MustFloat64("longitude", &req.longitude).
+		MustString("place_type", &req.placeType).
+		BindError()
 	if err != nil {
 		return err
 	}
 
-	// latitudeParam := c.QueryParam("latitude")
-	// longitudeParam := c.QueryParam("longitude")
-	// placeType := c.QueryParam("placeType")
-	// invalids := make([]string, 0, 4)
-
-	// latitude, err := strconv.ParseFloat(latitudeParam, 64)
-	// if err != nil {
-	// 	invalids = append(invalids, "Invalid latitude")
-	// 	// Response(c, http.StatusBadRequest, "Invalid latitude", nil)
-	// }
-
-	// longitude, err := strconv.ParseFloat(longitudeParam, 64)
-	// if err != nil {
-	// 	invalids = append(invalids, "Invalid longitude")
-	// 	// Response(c, http.StatusBadRequest, "Invalid longitude", nil)
-	// }
-
-	// if placeType == "" {
-	// 	invalids = append(invalids, "placeType is required")
-	// }
-
-	// if len(invalids) > 0 {
-	// 	return Response(c, http.StatusBadRequest, invalids, nil)
-	// }
-
-	recommendations, err := h.Service.GetByLocation(c, req)
+	recommendations, err := h.Service.GetByLocation(&recommendation.ReqData{
+		Latitude:  req.latitude,
+		Longitude: req.longitude,
+		PlaceType: req.placeType,
+	})
 	if err != nil {
 		return err
 	}
 
-	return Response(c, http.StatusOK, recommendations, nil)
+	return Respond(c, http.StatusOK, recommendations, nil)
 }

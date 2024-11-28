@@ -4,11 +4,28 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/Bangkit-Bersama/CrowdWiseBali-api/entity"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/config"
-	"github.com/labstack/echo/v4"
 	"googlemaps.github.io/maps"
 )
+
+type ReqData struct {
+	Latitude  float64
+	Longitude float64
+	PlaceType string
+}
+
+type ResData struct {
+	SearchResult []NearbyPlaces `json:"search_result"`
+}
+
+type NearbyPlaces struct {
+	PlaceID         string       `json:"place_id"`
+	PlaceName       string       `json:"place_name"`
+	UserRatingCount int          `json:"user_rating_count"`
+	Rating          float32      `json:"rating"`
+	GoogleMapsLink  string       `json:"google_maps_link"`
+	Photos          []maps.Photo `json:"photos"`
+}
 
 type Service struct {
 }
@@ -17,14 +34,12 @@ func NewService() *Service {
 	return &Service{}
 }
 
-func (s *Service) GetByLocation(c echo.Context, req entity.ServiceGetRecommendationReq) (entity.ServiceGetRecommendationRes, error) {
-	res := entity.ServiceGetRecommendationRes{}
-
+func (s *Service) GetByLocation(req *ReqData) (*ResData, error) {
 	apiKey := config.GMPAPIKey
 
 	client, err := maps.NewClient(maps.WithAPIKey(apiKey))
 	if err != nil {
-		return res, err
+		return nil, err
 	}
 
 	location := &maps.LatLng{
@@ -42,13 +57,17 @@ func (s *Service) GetByLocation(c echo.Context, req entity.ServiceGetRecommendat
 
 	gmapResponse, err := client.NearbySearch(context.Background(), searchQuery)
 	if err != nil {
-		return res, err
+		return nil, err
+	}
+
+	res := ResData{
+		SearchResult: make([]NearbyPlaces, 0, len(gmapResponse.Results)),
 	}
 
 	for _, result := range gmapResponse.Results {
 		urlEncodedName := url.QueryEscape(result.Name)
 		googleMapsLink := "https://www.google.com/maps/search/?api=1&query=" + urlEncodedName + "&query_place_id=" + result.PlaceID
-		places := entity.NearbyPlaces{
+		places := NearbyPlaces{
 			PlaceID:         result.PlaceID,
 			PlaceName:       result.Name,
 			UserRatingCount: result.UserRatingsTotal,
@@ -59,5 +78,5 @@ func (s *Service) GetByLocation(c echo.Context, req entity.ServiceGetRecommendat
 		res.SearchResult = append(res.SearchResult, places)
 	}
 
-	return res, nil
+	return &res, nil
 }

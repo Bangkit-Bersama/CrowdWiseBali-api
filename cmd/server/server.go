@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	v1Handler "github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/api/v1"
+	v1 "github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/api/v1"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/config"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/place"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/recommendation"
@@ -11,25 +11,23 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-func errorHandler(err error, c echo.Context) {
-	code := http.StatusInternalServerError
-	if he, ok := err.(*echo.HTTPError); ok {
-		code = he.Code
-	}
-	c.Logger().Error(err)
-	c.JSON(code, map[string]string{
-		"status":  "error",
-		"message": err.Error(),
-	})
-}
-
 func main() {
 	config.LoadEnv()
 
 	e := echo.New()
-	e.Debug = !config.Production
+	if !config.Production {
+		e.Logger.SetLevel(log.DEBUG)
+		e.Debug = true
+	}
 	e.HideBanner = true
-	e.HTTPErrorHandler = errorHandler
+
+	if l, ok := e.Logger.(*log.Logger); ok {
+		l.SetHeader("${time_rfc3339} ${level}")
+	}
+
+	if !config.Production {
+		e.Logger.Warn("Server is running in debug mode.")
+	}
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "API is running.")
@@ -38,9 +36,11 @@ func main() {
 	placeService := place.NewService()
 	recommendationService := recommendation.NewService()
 
-	v1Group := e.Group("/api/v1")
-	v1Handler.NewPlaceHandler(v1Group, placeService)
-	v1Handler.NewRecommendationHandler(v1Group, recommendationService)
+	v1.NewGroup(
+		e,
+		placeService,
+		recommendationService,
+	)
 
-	log.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":8080"))
 }
