@@ -2,8 +2,8 @@ package v1
 
 import (
 	"net/http"
-	"strconv"
 
+	"github.com/Bangkit-Bersama/CrowdWiseBali-api/entity"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/recommendation"
 	"github.com/labstack/echo/v4"
 )
@@ -25,33 +25,39 @@ func NewRecommendationHandler(g *echo.Group, service *recommendation.Service) *R
 }
 
 func (h *RecommendationHandler) GetByLocation(c echo.Context) error {
-	latitudeParam := c.QueryParam("latitude")
-	longitudeParam := c.QueryParam("longitude")
-	placeType := c.QueryParam("placeType")
+	req := entity.ServiceGetRecommendationReq{}
 
-	invalids := make([]string, 0, 4)
-
-	latitude, err := strconv.ParseFloat(latitudeParam, 64)
+	err := c.Bind(&req)
 	if err != nil {
-		invalids = append(invalids, "Invalid latitude")
-		// Response(c, http.StatusBadRequest, "Invalid latitude", nil)
+		return err
 	}
 
-	longitude, err := strconv.ParseFloat(longitudeParam, 64)
-	if err != nil {
-		invalids = append(invalids, "Invalid longitude")
-		// Response(c, http.StatusBadRequest, "Invalid longitude", nil)
-	}
+	// latitudeParam := c.QueryParam("latitude")
+	// longitudeParam := c.QueryParam("longitude")
+	// placeType := c.QueryParam("placeType")
+	// invalids := make([]string, 0, 4)
 
-	if placeType == "" {
-		invalids = append(invalids, "placeType is required")
-	}
+	// latitude, err := strconv.ParseFloat(latitudeParam, 64)
+	// if err != nil {
+	// 	invalids = append(invalids, "Invalid latitude")
+	// 	// Response(c, http.StatusBadRequest, "Invalid latitude", nil)
+	// }
 
-	if len(invalids) > 0 {
-		return Response(c, http.StatusBadRequest, invalids, nil)
-	}
+	// longitude, err := strconv.ParseFloat(longitudeParam, 64)
+	// if err != nil {
+	// 	invalids = append(invalids, "Invalid longitude")
+	// 	// Response(c, http.StatusBadRequest, "Invalid longitude", nil)
+	// }
 
-	recommendations, err := h.Service.GetByLocation(c, latitude, longitude, placeType)
+	// if placeType == "" {
+	// 	invalids = append(invalids, "placeType is required")
+	// }
+
+	// if len(invalids) > 0 {
+	// 	return Response(c, http.StatusBadRequest, invalids, nil)
+	// }
+
+	recommendations, err := h.Service.GetByLocation(c, req)
 	if err != nil {
 		return err
 	}

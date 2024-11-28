@@ -2,8 +2,9 @@ package recommendation
 
 import (
 	"context"
-	"log"
+	"net/url"
 
+	"github.com/Bangkit-Bersama/CrowdWiseBali-api/entity"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/config"
 	"github.com/labstack/echo/v4"
 	"googlemaps.github.io/maps"
@@ -16,8 +17,8 @@ func NewService() *Service {
 	return &Service{}
 }
 
-func (s *Service) GetByLocation(c echo.Context, latitude float64, longitude float64, placeType string) (maps.PlacesSearchResponse, error) {
-	res := maps.PlacesSearchResponse{}
+func (s *Service) GetByLocation(c echo.Context, req entity.ServiceGetRecommendationReq) (entity.ServiceGetRecommendationRes, error) {
+	res := entity.ServiceGetRecommendationRes{}
 
 	apiKey := config.GMPAPIKey
 
@@ -27,27 +28,35 @@ func (s *Service) GetByLocation(c echo.Context, latitude float64, longitude floa
 	}
 
 	location := &maps.LatLng{
-		Lat: latitude,
-		Lng: longitude,
+		Lat: req.Latitude,
+		Lng: req.Longitude,
 	}
 
-	radius := 5000 // in meter
+	radius := 5000 //in meter
 
-	req := &maps.NearbySearchRequest{
+	searchQuery := &maps.NearbySearchRequest{
 		Location: location,
 		Radius:   uint(radius),
-		Type:     maps.PlaceType(placeType),
+		Type:     maps.PlaceType(req.PlaceType),
 	}
 
-	res, err = client.NearbySearch(context.Background(), req)
+	gmapResponse, err := client.NearbySearch(context.Background(), searchQuery)
 	if err != nil {
 		return res, err
 	}
 
-	log.Println("Nearby Places:")
-	for _, result := range res.Results {
-		log.Printf("PlaceID: %s, Name: %s, Address: %s, Rating: %.1f",
-			result.PlaceID, result.Name, result.Vicinity, result.Rating)
+	for _, result := range gmapResponse.Results {
+		urlEncodedName := url.QueryEscape(result.Name)
+		googleMapsLink := "https://www.google.com/maps/search/?api=1&query=" + urlEncodedName + "&query_place_id=" + result.PlaceID
+		places := entity.NearbyPlaces{
+			PlaceID:         result.PlaceID,
+			PlaceName:       result.Name,
+			UserRatingCount: result.UserRatingsTotal,
+			Rating:          result.Rating,
+			GoogleMapsLink:  googleMapsLink,
+			Photos:          result.Photos,
+		}
+		res.SearchResult = append(res.SearchResult, places)
 	}
 
 	return res, nil
