@@ -4,14 +4,12 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/config"
 	"googlemaps.github.io/maps"
 )
 
 type ReqData struct {
 	Latitude  float64
 	Longitude float64
-	PlaceType string
 }
 
 type ResData struct {
@@ -20,6 +18,7 @@ type ResData struct {
 
 type NearbyPlaces struct {
 	PlaceID         string       `json:"place_id"`
+	PlaceType       []string     `json:"place_type"`
 	PlaceName       string       `json:"place_name"`
 	UserRatingCount int          `json:"user_rating_count"`
 	Rating          float32      `json:"rating"`
@@ -28,34 +27,29 @@ type NearbyPlaces struct {
 }
 
 type Service struct {
+	mapsClient *maps.Client
 }
 
-func NewService() *Service {
-	return &Service{}
-}
-
-func (s *Service) GetByLocation(req *ReqData) (*ResData, error) {
-	apiKey := config.GMPAPIKey
-
-	client, err := maps.NewClient(maps.WithAPIKey(apiKey))
-	if err != nil {
-		return nil, err
+func NewService(mapsClient *maps.Client) *Service {
+	return &Service{
+		mapsClient: mapsClient,
 	}
+}
 
+func (s *Service) GetByLocation(c context.Context, req *ReqData) (*ResData, error) {
 	location := &maps.LatLng{
 		Lat: req.Latitude,
 		Lng: req.Longitude,
 	}
 
-	radius := 5000 //in meter
+	radius := 10000 //in meter
 
 	searchQuery := &maps.NearbySearchRequest{
 		Location: location,
 		Radius:   uint(radius),
-		Type:     maps.PlaceType(req.PlaceType),
 	}
 
-	gmapResponse, err := client.NearbySearch(context.Background(), searchQuery)
+	gmapResponse, err := s.mapsClient.NearbySearch(c, searchQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +63,7 @@ func (s *Service) GetByLocation(req *ReqData) (*ResData, error) {
 		googleMapsLink := "https://www.google.com/maps/search/?api=1&query=" + urlEncodedName + "&query_place_id=" + result.PlaceID
 		places := NearbyPlaces{
 			PlaceID:         result.PlaceID,
+			PlaceType:       result.Types,
 			PlaceName:       result.Name,
 			UserRatingCount: result.UserRatingsTotal,
 			Rating:          result.Rating,

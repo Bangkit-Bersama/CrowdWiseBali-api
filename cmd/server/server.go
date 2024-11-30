@@ -9,6 +9,7 @@ import (
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/recommendation"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+	"googlemaps.github.io/maps"
 )
 
 func main() {
@@ -33,8 +34,13 @@ func main() {
 		return c.String(http.StatusOK, "API is running.")
 	})
 
+	mapsClient, err := maps.NewClient(maps.WithAPIKey(config.GMPAPIKey))
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+
 	placeService := place.NewService()
-	recommendationService := recommendation.NewService()
+	recommendationService := recommendation.NewService(mapsClient)
 
 	v1.NewGroup(
 		e,
