@@ -39,7 +39,7 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 
-	placeService := place.NewService()
+	placeService := place.NewService(mapsClient)
 	recommendationService := recommendation.NewService(mapsClient)
 
 	v1.NewGroup(
