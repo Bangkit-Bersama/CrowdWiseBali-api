@@ -5,6 +5,7 @@ import (
 
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/place"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/recommendation"
+	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/user"
 	"github.com/labstack/echo/v4"
 )
 
@@ -15,12 +16,14 @@ type V1Group struct {
 
 	placeHandler          *PlaceHandler
 	recommendationHandler *RecommendationHandler
+	userHandler           *UserHandler
 }
 
 func NewGroup(
 	e *echo.Echo,
 	placeService *place.Service,
 	recommendationService *recommendation.Service,
+	userService *user.Service,
 ) *V1Group {
 	routeGroup := e.Group("/api/v1")
 
@@ -52,6 +55,7 @@ func NewGroup(
 		RouteGroup:            routeGroup,
 		placeHandler:          NewPlaceHandler(routeGroup, placeService),
 		recommendationHandler: NewRecommendationHandler(routeGroup, recommendationService),
+		userHandler:           NewUserHandler(routeGroup, userService),
 	}
 
 	return v1Group
