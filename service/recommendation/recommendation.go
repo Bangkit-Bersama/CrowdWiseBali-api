@@ -17,13 +17,14 @@ type ResData struct {
 }
 
 type NearbyPlaces struct {
-	PlaceID         string       `json:"place_id"`
-	PlaceType       []string     `json:"place_type"`
-	PlaceName       string       `json:"place_name"`
-	UserRatingCount int          `json:"user_rating_count"`
-	Rating          float32      `json:"rating"`
-	GoogleMapsLink  string       `json:"google_maps_link"`
-	Photos          []maps.Photo `json:"photos"`
+	PlaceID          string       `json:"place_id"`
+	PlaceType        []string     `json:"place_type"`
+	PlaceName        string       `json:"place_name"`
+	FormattedAddress string       `json:"formatted_address"`
+	UserRatingCount  int          `json:"user_rating_count"`
+	Rating           float32      `json:"rating"`
+	GoogleMapsLink   string       `json:"google_maps_link"`
+	Photos           []maps.Photo `json:"photos"`
 }
 
 type Service struct {
@@ -62,13 +63,14 @@ func (s *Service) GetByLocation(c context.Context, req *ReqData) (*ResData, erro
 		urlEncodedName := url.QueryEscape(result.Name)
 		googleMapsLink := "https://www.google.com/maps/search/?api=1&query=" + urlEncodedName + "&query_place_id=" + result.PlaceID
 		places := NearbyPlaces{
-			PlaceID:         result.PlaceID,
-			PlaceType:       result.Types,
-			PlaceName:       result.Name,
-			UserRatingCount: result.UserRatingsTotal,
-			Rating:          result.Rating,
-			GoogleMapsLink:  googleMapsLink,
-			Photos:          result.Photos,
+			PlaceID:          result.PlaceID,
+			PlaceType:        result.Types,
+			PlaceName:        result.Name,
+			FormattedAddress: result.FormattedAddress,
+			UserRatingCount:  result.UserRatingsTotal,
+			Rating:           result.Rating,
+			GoogleMapsLink:   googleMapsLink,
+			Photos:           result.Photos,
 		}
 		res.SearchResult = append(res.SearchResult, places)
 	}
