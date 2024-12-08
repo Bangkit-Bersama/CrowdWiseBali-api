@@ -54,6 +54,7 @@ func (s *Service) GetByID(c context.Context, req *ServiceGetPlacebyIDReq) (*Serv
 		PlaceType:        gmapResponse.Types,
 		Reviews:          gmapResponse.Reviews,
 		GoogleMapsLink:   "https://www.google.com/maps/search/?api=1&query=" + urlEncodedName + "&query_place_id=" + gmapResponse.PlaceID,
+		Photos:           gmapResponse.Photos,
 	}
 	return &res, err
 }
