@@ -4,12 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	// firebase "firebase.google.com/go"
-	// "google.golang.org/api/option"
-
 	firebase "firebase.google.com/go/v4"
 	v1 "github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/api/v1"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/config"
+	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/auth"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/place"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/recommendation"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/user"
@@ -47,7 +45,10 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 
-	e.Logger.Debug(firebaseClient)
+	authClient, err := firebaseClient.Auth(context.Background())
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
 
 	firestoreClient, err := firebaseClient.Firestore(context.Background())
 	if err != nil {
@@ -59,12 +60,14 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 
+	authService := auth.NewService(authClient)
 	userService := user.NewService(firestoreClient)
 	placeService := place.NewService(mapsClient)
 	recommendationService := recommendation.NewService(mapsClient)
 
 	v1.NewGroup(
 		e,
+		authService,
 		userService,
 		placeService,
 		recommendationService,

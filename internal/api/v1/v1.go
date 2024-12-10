@@ -3,6 +3,7 @@ package v1
 import (
 	"net/http"
 
+	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/auth"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/place"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/recommendation"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/user"
@@ -14,13 +15,15 @@ type V1Group struct {
 
 	RouteGroup *echo.Group
 
+	authHandler           *AuthHandler
+	userHandler           *UserHandler
 	placeHandler          *PlaceHandler
 	recommendationHandler *RecommendationHandler
-	userHandler           *UserHandler
 }
 
 func NewGroup(
 	e *echo.Echo,
+	authService *auth.Service,
 	userService *user.Service,
 	placeService *place.Service,
 	recommendationService *recommendation.Service,
@@ -33,35 +36,37 @@ func NewGroup(
 
 			if err != nil {
 				if he, ok := err.(*echo.HTTPError); ok {
-					return Respond(c, he.Code, nil, err)
+					return respond(c, he.Code, nil, err)
 				}
 
 				if be, ok := err.(*echo.BindingError); ok {
-					return Respond(c, http.StatusBadRequest, map[string]interface{}{
+					return respond(c, http.StatusBadRequest, map[string]interface{}{
 						be.Field: be.Message,
 					}, nil)
 				}
 
 				c.Logger().Error(err)
-				return Respond(c, http.StatusInternalServerError, nil, nil)
+				return respond(c, http.StatusInternalServerError, nil, nil)
 			}
 
 			return nil
 		}
 	})
 
+	authHandler := NewAuthHandler(routeGroup, authService)
+
 	v1Group := &V1Group{
 		Echo:                  e,
 		RouteGroup:            routeGroup,
-		placeHandler:          NewPlaceHandler(routeGroup, placeService),
-		recommendationHandler: NewRecommendationHandler(routeGroup, recommendationService),
+		placeHandler:          NewPlaceHandler(routeGroup, placeService, authHandler),
+		recommendationHandler: NewRecommendationHandler(routeGroup, recommendationService, authHandler),
 		userHandler:           NewUserHandler(routeGroup, userService),
 	}
 
 	return v1Group
 }
 
-func Respond(c echo.Context, code int, i interface{}, e error) error {
+func respond(c echo.Context, code int, i interface{}, e error) error {
 	response := map[string]interface{}{
 		"status": "success",
 	}

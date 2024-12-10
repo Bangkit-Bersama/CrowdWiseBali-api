@@ -11,12 +11,14 @@ type RecommendationHandler struct {
 	Service *recommendation.Service
 }
 
-func NewRecommendationHandler(g *echo.Group, service *recommendation.Service) *RecommendationHandler {
+func NewRecommendationHandler(g *echo.Group, service *recommendation.Service, authHandler *AuthHandler) *RecommendationHandler {
 	handler := &RecommendationHandler{
 		Service: service,
 	}
 
 	routeGroup := g.Group("/recommendation")
+
+	routeGroup.Use(authHandler.AuthMiddleware)
 
 	routeGroup.GET("", handler.GetByLocation)
 
@@ -47,5 +49,5 @@ func (h *RecommendationHandler) GetByLocation(c echo.Context) error {
 		return err
 	}
 
-	return Respond(c, http.StatusOK, recommendations, nil)
+	return respond(c, http.StatusOK, recommendations, nil)
 }

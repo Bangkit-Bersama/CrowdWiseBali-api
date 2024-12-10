@@ -24,5 +24,5 @@ func NewUserHandler(g *echo.Group, service *user.Service) *UserHandler {
 }
 func (h *UserHandler) GetUser(c echo.Context) error {
 
-	return Respond(c, http.StatusOK, "Server menyala abangkuh!!!", nil)
+	return respond(c, http.StatusOK, "Server menyala abangkuh!!!", nil)
 }

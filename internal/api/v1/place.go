@@ -11,12 +11,14 @@ type PlaceHandler struct {
 	Service *place.Service
 }
 
-func NewPlaceHandler(g *echo.Group, service *place.Service) *PlaceHandler {
+func NewPlaceHandler(g *echo.Group, service *place.Service, authHandler *AuthHandler) *PlaceHandler {
 	handler := &PlaceHandler{
 		Service: service,
 	}
 
 	routeGroup := g.Group("/places")
+
+	routeGroup.Use(authHandler.AuthMiddleware)
 
 	routeGroup.GET("/:id", handler.GetByID)
 
@@ -51,5 +53,5 @@ func (h *PlaceHandler) GetByID(c echo.Context) error {
 		return err
 	}
 
-	return Respond(c, http.StatusOK, places, nil)
+	return respond(c, http.StatusOK, places, nil)
 }
