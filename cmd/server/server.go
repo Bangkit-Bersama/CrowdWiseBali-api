@@ -6,7 +6,8 @@ import (
 
 	// firebase "firebase.google.com/go"
 	// "google.golang.org/api/option"
-	"cloud.google.com/go/firestore"
+
+	firebase "firebase.google.com/go/v4"
 	v1 "github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/api/v1"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/config"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/place"
@@ -39,23 +40,34 @@ func main() {
 		return c.String(http.StatusOK, "API is running.")
 	})
 
+	firebaseClient, err := firebase.NewApp(context.Background(), &firebase.Config{
+		ProjectID: "crowdwise-bali",
+	})
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+
+	e.Logger.Debug(firebaseClient)
+
+	firestoreClient, err := firebaseClient.Firestore(context.Background())
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+
 	mapsClient, err := maps.NewClient(maps.WithAPIKey(config.GMPAPIKey))
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
 
-	fireCtx := context.Background()
-	firestoreClient, err := firestore.NewClient(fireCtx, "crowdwise-bali")
-
+	userService := user.NewService(firestoreClient)
 	placeService := place.NewService(mapsClient)
 	recommendationService := recommendation.NewService(mapsClient)
-	userService := user.NewService(firestoreClient)
 
 	v1.NewGroup(
 		e,
+		userService,
 		placeService,
 		recommendationService,
-		userService,
 	)
 
 	e.Logger.Fatal(e.Start(":8080"))

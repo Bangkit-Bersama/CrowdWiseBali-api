@@ -21,9 +21,9 @@ type V1Group struct {
 
 func NewGroup(
 	e *echo.Echo,
+	userService *user.Service,
 	placeService *place.Service,
 	recommendationService *recommendation.Service,
-	userService *user.Service,
 ) *V1Group {
 	routeGroup := e.Group("/api/v1")
 
