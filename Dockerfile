@@ -1,5 +1,11 @@
 FROM tensorflow/tensorflow:2.18.0 AS go-tf
 
+# Install TensorFlow C library
+RUN curl -L \
+   "https://storage.googleapis.com/tensorflow/versions/2.18.0/libtensorflow-cpu-linux-x86_64.tar.gz" | \
+   tar -C "/usr/local" -xz
+RUN ldconfig
+
 ARG TARGETARCH
 RUN if [ $TARGETARCH = "arm64" ]; then \
     curl -L "https://go.dev/dl/go1.23.4.linux-arm64.tar.gz" | tar -C /usr/local -xz \
