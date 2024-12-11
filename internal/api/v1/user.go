@@ -16,9 +16,9 @@ func NewUserHandler(g *echo.Group, service *user.Service) *UserHandler {
 		Service: service,
 	}
 
-	routeGroup := g.Group("/users")
+	r := g.Group("/users")
 
-	routeGroup.GET("/:id", handler.GetUser)
+	r.GET("/:id", handler.GetUser)
 
 	return handler
 }

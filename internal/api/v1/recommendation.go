@@ -16,11 +16,11 @@ func NewRecommendationHandler(g *echo.Group, service *recommendation.Service, au
 		Service: service,
 	}
 
-	routeGroup := g.Group("/recommendation")
+	r := g.Group("/recommendation")
 
-	routeGroup.Use(authHandler.AuthMiddleware)
+	r.Use(authHandler.AuthMiddleware)
 
-	routeGroup.GET("", handler.GetByLocation)
+	r.GET("", handler.GetByLocation)
 
 	return handler
 }

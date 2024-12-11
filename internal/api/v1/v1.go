@@ -11,14 +11,15 @@ import (
 )
 
 type V1Group struct {
-	Echo *echo.Echo
+	e *echo.Echo
 
-	RouteGroup *echo.Group
+	route *echo.Group
 
-	authHandler           *AuthHandler
-	userHandler           *UserHandler
-	placeHandler          *PlaceHandler
-	recommendationHandler *RecommendationHandler
+	auth           *AuthHandler
+	user           *UserHandler
+	place          *PlaceHandler
+	recommendation *RecommendationHandler
+	prediction     *PredictionHandler
 }
 
 func NewGroup(
@@ -28,9 +29,9 @@ func NewGroup(
 	placeService *place.Service,
 	recommendationService *recommendation.Service,
 ) *V1Group {
-	routeGroup := e.Group("/api/v1")
+	route := e.Group("/api/v1")
 
-	routeGroup.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+	route.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			err := next(c)
 
@@ -53,9 +54,15 @@ func NewGroup(
 		}
 	})
 
-	authHandler := NewAuthHandler(routeGroup, authService)
+	authHandler := NewAuthHandler(route, authService)
 
 	v1Group := &V1Group{
+		e:              e,
+		route:          route,
+		auth:           authHandler,
+		user:           NewUserHandler(route, userService),
+		place:          NewPlaceHandler(route, placeService, authHandler),
+		recommendation: NewRecommendationHandler(route, recommendationService, authHandler),
 		Echo:                  e,
 		RouteGroup:            routeGroup,
 		placeHandler:          NewPlaceHandler(routeGroup, placeService, authHandler),

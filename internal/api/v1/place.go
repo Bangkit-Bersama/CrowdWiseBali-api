@@ -16,11 +16,11 @@ func NewPlaceHandler(g *echo.Group, service *place.Service, authHandler *AuthHan
 		Service: service,
 	}
 
-	routeGroup := g.Group("/places")
+	r := g.Group("/places")
 
-	routeGroup.Use(authHandler.AuthMiddleware)
+	r.Use(authHandler.AuthMiddleware)
 
-	routeGroup.GET("/:id", handler.GetByID)
+	r.GET("/:id", handler.GetByID)
 
 	return handler
 }
