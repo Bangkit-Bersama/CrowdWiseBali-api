@@ -16,7 +16,6 @@ FROM golang:1.23 AS runtime
 WORKDIR /app
 
 COPY --from=build /app/server server
-COPY places.json .
 
 EXPOSE 8080
 
