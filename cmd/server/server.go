@@ -9,12 +9,25 @@ import (
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/config"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/auth"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/place"
+	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/prediction"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/recommendation"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/user"
+	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"googlemaps.github.io/maps"
 )
+
+type CustomValidator struct {
+	validator *validator.Validate
+}
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	if err := cv.validator.Struct(i); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return nil
+}
 
 func main() {
 	config.LoadEnv()
@@ -29,6 +42,8 @@ func main() {
 	if l, ok := e.Logger.(*log.Logger); ok {
 		l.SetHeader("${time_rfc3339} ${level}")
 	}
+
+	e.Validator = &CustomValidator{validator: validator.New()}
 
 	if !config.Production {
 		e.Logger.Warn("Server is running in debug mode.")
@@ -64,6 +79,10 @@ func main() {
 	userService := user.NewService(firestoreClient)
 	placeService := place.NewService(mapsClient)
 	recommendationService := recommendation.NewService(mapsClient)
+	predictionService, err := prediction.NewService(firestoreClient)
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
 
 	v1.NewGroup(
 		e,
@@ -71,6 +90,7 @@ func main() {
 		userService,
 		placeService,
 		recommendationService,
+		predictionService,
 	)
 
 	e.Logger.Fatal(e.Start(":8080"))

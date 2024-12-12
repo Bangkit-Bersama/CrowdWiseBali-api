@@ -5,6 +5,7 @@ import (
 
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/auth"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/place"
+	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/prediction"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/recommendation"
 	"github.com/Bangkit-Bersama/CrowdWiseBali-api/service/user"
 	"github.com/labstack/echo/v4"
@@ -28,6 +29,7 @@ func NewGroup(
 	userService *user.Service,
 	placeService *place.Service,
 	recommendationService *recommendation.Service,
+	predictionService *prediction.Service,
 ) *V1Group {
 	route := e.Group("/api/v1")
 
@@ -63,11 +65,7 @@ func NewGroup(
 		user:           NewUserHandler(route, userService),
 		place:          NewPlaceHandler(route, placeService, authHandler),
 		recommendation: NewRecommendationHandler(route, recommendationService, authHandler),
-		Echo:                  e,
-		RouteGroup:            routeGroup,
-		placeHandler:          NewPlaceHandler(routeGroup, placeService, authHandler),
-		recommendationHandler: NewRecommendationHandler(routeGroup, recommendationService, authHandler),
-		userHandler:           NewUserHandler(routeGroup, userService),
+		prediction:     NewPredictionHandler(route, predictionService, authHandler),
 	}
 
 	return v1Group
