@@ -78,7 +78,10 @@ func main() {
 	authService := auth.NewService(authClient)
 	userService := user.NewService(firestoreClient)
 	placeService := place.NewService(mapsClient)
-	recommendationService := recommendation.NewService(mapsClient)
+	recommendationService, err := recommendation.NewService(mapsClient)
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
 	predictionService, err := prediction.NewService(firestoreClient)
 	if err != nil {
 		e.Logger.Fatal(err)

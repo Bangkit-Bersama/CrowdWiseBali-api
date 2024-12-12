@@ -41,7 +41,7 @@ func (h *RecommendationHandler) GetByLocation(c echo.Context) error {
 		return err
 	}
 
-	recommendations, err := h.Service.GetByLocation(c.Request().Context(), &recommendation.ReqData{
+	recommendations, err := h.Service.GetByLocation(c.Request().Context(), &recommendation.Req{
 		Latitude:  req.latitude,
 		Longitude: req.longitude,
 	})
