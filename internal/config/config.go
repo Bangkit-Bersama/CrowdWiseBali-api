@@ -21,5 +21,5 @@ func LoadEnv() {
 	production, _ := strconv.Atoi(os.Getenv("PRODUCTION"))
 	Production = production > 0
 	GMPAPIKey = os.Getenv("GMP_API_KEY")
-	GMPAPIKey = os.Getenv("INFERENCE_SERVER_URL")
+	InferenceServerUrl = os.Getenv("INFERENCE_SERVER_URL")
 }
