@@ -37,7 +37,7 @@ func (h *AuthHandler) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 		_, err := h.Service.VerifyToken(c.Request().Context(), token)
 		if err != nil {
-			return err
+			return echo.NewHTTPError(http.StatusUnauthorized, "token invalid or expired")
 		}
 
 		return next(c)
