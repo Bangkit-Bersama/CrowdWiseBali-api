@@ -3,9 +3,11 @@ package recommendation
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"os"
 
+	"github.com/Bangkit-Bersama/CrowdWiseBali-api/internal/config"
 	"googlemaps.github.io/maps"
 )
 
@@ -36,7 +38,7 @@ type Service struct {
 }
 
 func NewService(mapsClient *maps.Client) (*Service, error) {
-	placesJsonRaw, err := os.ReadFile("./places.json")
+	placesJsonRaw, err := os.ReadFile(fmt.Sprintf("models/%d/places.json", config.MODEL_VERSION))
 	if err != nil {
 		return nil, err
 	}

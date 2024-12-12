@@ -8,6 +8,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const MODEL_VERSION = 1
+
 var Production bool
 var GMPAPIKey string
 var InferenceServerUrl string
